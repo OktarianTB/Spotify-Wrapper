@@ -82,18 +82,18 @@ class Spotify:
         if artist_albums_data:
             artist_albums = []
             for album in artist_albums_data.json()["items"]:
-                artist_name = album["artists"][0]["name"]
                 album_id = album["id"]
-                album_name = album["name"]
-                release_date = album["release_date"]
-                total_tracks = album["total_tracks"]
-                album_cover = album["images"][0]["url"]
                 if get_just_id:
                     artist_albums.append(album_id)
                 else:
+                    artist_name = album["artists"][0]["name"]
+                    album_name = album["name"]
+                    release_date = album["release_date"]
+                    total_tracks = album["total_tracks"]
+                    album_cover = album["images"][0]["url"]
                     artist_albums.append({"artist": artist_name, "id": album_id, "name": album_name,
-                                           "release_date": release_date, "total_tracks": total_tracks,
-                                           "cover": album_cover})
+                                          "release_date": release_date, "total_tracks": total_tracks,
+                                          "cover": album_cover})
             return artist_albums
         print("Request failed. No albums were obtained.")
         return None
@@ -104,6 +104,33 @@ class Spotify:
             return self.get_albums_from_id(artist_id, get_just_id)
         return None
 
+    def get_artist_top_tracks_from_id(self, artist_id, get_just_id=False):
+        top_tracks_data = self._make_request(f"https://api.spotify.com/v1/artists/{artist_id}/top-tracks",
+                                             {"market": "US"})
+        if top_tracks_data:
+            artist_tracks = []
+            for track in top_tracks_data.json()["tracks"]:
+                track_id = track["id"]
+                if get_just_id:
+                    artist_tracks.append(track_id)
+                else:
+                    track_name = track["name"]
+                    album_name = track["album"]["name"]
+                    is_explicit = track["explicit"]
+                    duration = track["duration_ms"]
+                    track_artists = []
+                    for artist in track["artists"]:
+                        track_artists.append({"name": artist["name"], "id": artist["id"]})
+                    artist_tracks.append({"id": track_id, "track_name": track_name, "artists": track_artists,
+                                          "album_name": album_name, "is_explicit": is_explicit, "duration": duration})
+            return artist_tracks
+        return None
+
+    def get_artist_top_tracks_from_name(self, artist_name):
+        artist_id = self.get_artist_id(artist_name)
+        if artist_id:
+            return self.get_artist_top_tracks_from_id(artist_id)
+        return None
+
 
 spotify = Spotify(CLIENT_ID, CLIENT_SECRET)
-
