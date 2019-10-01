@@ -3,20 +3,20 @@ import json
 from requests.auth import HTTPBasicAuth
 from artist import Artist
 
-CLIENT_ID = ""
-CLIENT_SECRET = ""
+CLIENT_ID = "ec89b6ab05d444c7a1f958daf52e9f79"
+CLIENT_SECRET = "fffeda3a63324af4988a25982d016fed"
 
 
 class Spotify:
     def __init__(self, client_id, client_secret):
         self.client_id = client_id
         self.client_secret = client_secret
-        self.token = self._get_access_token()
+        self.token = self.get_access_token()
 
     def __repr__(self):
         return "Spotify API Wrapper"
 
-    def _get_access_token(self):
+    def get_access_token(self):
         token_url = 'https://accounts.spotify.com/api/token'
         auth = HTTPBasicAuth(self.client_id, self.client_secret)
         data = {'grant_type': 'client_credentials'}
@@ -24,6 +24,8 @@ class Spotify:
         if request_token:
             if request_token.ok:
                 return json.loads(request_token.text)['access_token']
+            else:
+                print(f"Request token not ok, error code: {request_token.status_code}")
         print(f"Token Access Failed.")
         exit()
 
@@ -77,17 +79,17 @@ class Spotify:
         print("Request failed. No artist information was obtained.")
         return None
 
-    def get_albums_from_id(self, artist_id, get_just_id=False):
+    def get_albums_from_id(self, artist_id, just_id_and_name=False):
         artist_albums_data = self._make_request(f"https://api.spotify.com/v1/artists/{artist_id}/albums")
         if artist_albums_data:
             artist_albums = []
             for album in artist_albums_data.json()["items"]:
                 album_id = album["id"]
-                if get_just_id:
-                    artist_albums.append(album_id)
+                album_name = album["name"]
+                if just_id_and_name:
+                    artist_albums.append({"id": album_id, "name": album_name})
                 else:
                     artist_name = album["artists"][0]["name"]
-                    album_name = album["name"]
                     release_date = album["release_date"]
                     total_tracks = album["total_tracks"]
                     album_cover = album["images"][0]["url"]
@@ -98,23 +100,23 @@ class Spotify:
         print("Request failed. No albums were obtained.")
         return None
 
-    def get_albums_from_name(self, artist_name, get_just_id=False):
+    def get_albums_from_name(self, artist_name, just_id_and_name=False):
         artist_id = self.get_artist_id(artist_name)
         if artist_id:
-            return self.get_albums_from_id(artist_id, get_just_id)
+            return self.get_albums_from_id(artist_id, just_id_and_name)
         return None
 
-    def get_artist_top_tracks_from_id(self, artist_id, get_just_id=False):
+    def get_artist_top_tracks_from_id(self, artist_id, just_id_and_name=False):
         top_tracks_data = self._make_request(f"https://api.spotify.com/v1/artists/{artist_id}/top-tracks",
                                              {"market": "US"})
         if top_tracks_data:
             artist_tracks = []
             for track in top_tracks_data.json()["tracks"]:
                 track_id = track["id"]
-                if get_just_id:
-                    artist_tracks.append(track_id)
+                track_name = track["name"]
+                if just_id_and_name:
+                    artist_tracks.append({"id": track_id, "name": track_name})
                 else:
-                    track_name = track["name"]
                     album_name = track["album"]["name"]
                     is_explicit = track["explicit"]
                     duration = track["duration_ms"]
@@ -126,10 +128,30 @@ class Spotify:
             return artist_tracks
         return None
 
-    def get_artist_top_tracks_from_name(self, artist_name):
+    def get_artist_top_tracks_from_name(self, artist_name, just_id_and_name=False):
         artist_id = self.get_artist_id(artist_name)
         if artist_id:
-            return self.get_artist_top_tracks_from_id(artist_id)
+            return self.get_artist_top_tracks_from_id(artist_id, just_id_and_name)
+        return None
+    
+    def get_tracks_of_album(self, album_id):
+        tracks_data = self._make_request(f"https://api.spotify.com/v1/albums/{album_id}/tracks", {"limit": 50})
+        if tracks_data:
+            tracks = []
+            for track in tracks_data.json()["items"]:
+                track_name = track["name"]
+                track_id = track["id"]
+                artists = []
+                for artist in track["artists"]:
+                    artists.append({"name": artist["name"], "id": artist["id"]})
+                tracks.append({"name": track_name, "id": track_id, "artists": artists})
+            return tracks
+        return None
+
+    def get_track_audio_features(self, track_id):
+        audio_features_data = self._make_request(f"https://api.spotify.com/v1/audio-features/{track_id}")
+        if audio_features_data:
+            return audio_features_data.json()
         return None
 
 
