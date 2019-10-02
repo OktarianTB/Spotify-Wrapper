@@ -3,8 +3,8 @@ import json
 from requests.auth import HTTPBasicAuth
 from artist import Artist
 
-CLIENT_ID = "ec89b6ab05d444c7a1f958daf52e9f79"
-CLIENT_SECRET = "fffeda3a63324af4988a25982d016fed"
+CLIENT_ID = ""
+CLIENT_SECRET = ""
 
 
 class Spotify:
@@ -47,9 +47,9 @@ class Spotify:
         print("Unable to create artist object.")
         return None
 
-    def get_artist_id(self, search_query, limit=1):
+    def get_artist_id(self, search_query):
         artist_id_data = self._make_request("https://api.spotify.com/v1/search",
-                                            {"query": search_query, "type": "artist", "limit": limit})
+                                            {"query": search_query, "type": "artist", "limit": 1})
         if artist_id_data:
             artist_id_json = artist_id_data.json()
             if artist_id_json["artists"]["total"] == 0:
@@ -154,5 +154,20 @@ class Spotify:
             return audio_features_data.json()
         return None
 
+    def get_related_artists(self, artist_id):
+        related_artists_data = self._make_request(f"https://api.spotify.com/v1/artists/{artist_id}/related-artists")
+        if related_artists_data:
+            related_artists = []
+            for artist in related_artists_data.json()["artists"]:
+                artist_name = artist["name"]
+                artist_id = artist["id"]
+                related_artists.append({"name": artist_name, "id": artist_id})
+            return related_artists
+        return None
+
 
 spotify = Spotify(CLIENT_ID, CLIENT_SECRET)
+artist_id = spotify.get_artist_id("Taylor Swift")
+for artist in spotify.get_related_artists(artist_id):
+    print(spotify.get_artist_info_from_id(artist["id"]))
+

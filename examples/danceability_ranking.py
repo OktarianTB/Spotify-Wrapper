@@ -1,7 +1,7 @@
 from main import Spotify
 
-CLIENT_ID = "ec89b6ab05d444c7a1f958daf52e9f79"
-CLIENT_SECRET = "fffeda3a63324af4988a25982d016fed"
+CLIENT_ID = ""
+CLIENT_SECRET = ""
 
 spotify = Spotify(CLIENT_ID, CLIENT_SECRET)
 artist_id = spotify.get_artist_id("The Weeknd")
