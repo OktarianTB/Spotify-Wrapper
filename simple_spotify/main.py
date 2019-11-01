@@ -1,10 +1,7 @@
 import requests
 import json
 from requests.auth import HTTPBasicAuth
-from artist import Artist
-
-CLIENT_ID = ""
-CLIENT_SECRET = ""
+from simple_spotify.artist import Artist
 
 
 class Spotify:
@@ -40,9 +37,10 @@ class Spotify:
     def get_artist_object(self, artist_id):
         artist_info = self.get_artist_info_from_id(artist_id)
         artist_albums = self.get_albums_from_id(artist_id)
+        artist_top_tracks = self.get_artist_top_tracks_from_id(artist_id, True)
         if artist_info and artist_albums:
             artist = Artist(artist_info["name"], artist_id, artist_info["followers"], artist_info["genres"],
-                            artist_info["popularity"], artist_info["image_link"], artist_albums)
+                            artist_info["popularity"], artist_info["image_link"], artist_albums, artist_top_tracks)
             return artist
         print("Unable to create artist object.")
         return None
@@ -165,9 +163,4 @@ class Spotify:
             return related_artists
         return None
 
-
-spotify = Spotify(CLIENT_ID, CLIENT_SECRET)
-artist_id = spotify.get_artist_id("Taylor Swift")
-for artist in spotify.get_related_artists(artist_id):
-    print(spotify.get_artist_info_from_id(artist["id"]))
 
