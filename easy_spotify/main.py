@@ -1,7 +1,7 @@
 import requests
 import json
 from requests.auth import HTTPBasicAuth
-from simple_spotify.artist import Artist
+from easy_spotify.artist import Artist
 
 
 class Spotify:

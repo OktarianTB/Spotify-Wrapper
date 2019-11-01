@@ -1,4 +1,4 @@
-from simple_spotify.main import Spotify
+from easy_spotify.main import Spotify
 
 CLIENT_ID = "YOUR ID"
 CLIENT_SECRET = "YOUR CLIENT SECRET"
