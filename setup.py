@@ -11,8 +11,7 @@ setup(
   download_url = 'https://github.com/OktarianTB/easy_spotify/archive/v0.1-alpha.tar.gz',
   keywords = ['SPOTIFY', 'WEB API'],   # Keywords that define your package best
   install_requires=[
-          'requests',
-          'json',
+          'requests'
       ],
   classifiers=[
     'Development Status :: 3 - Alpha',
