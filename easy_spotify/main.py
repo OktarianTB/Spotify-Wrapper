@@ -216,9 +216,3 @@ class Spotify:
             return tracks_info
         return None
 
-
-spotify = Spotify("ec89b6ab05d444c7a1f958daf52e9f79", "fffeda3a63324af4988a25982d016fed")
-h = spotify.get_multiple_track_id(["Look at her now", "Lover", "Baby", "Hello"])
-a = spotify.get_multiple_tracks_info(h)
-print(a)
-
