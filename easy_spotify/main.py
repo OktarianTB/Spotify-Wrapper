@@ -57,6 +57,23 @@ class Spotify:
         print("Request failed. No artist id was obtained.")
         return None
 
+    def get_track_id(self, search_query):
+        track_id_data = self._make_request("https://api.spotify.com/v1/search",
+                                            {"query": search_query, "type": "track", "limit": 1})
+        if track_id_data:
+            track_id_json = track_id_data.json()
+            if track_id_json["tracks"]["total"] == 0:
+                print("No track was found.")
+                return None
+            return track_id_json["tracks"]["items"][0]["id"]
+
+    def get_multiple_track_id(self, search_queries):
+        track_ids = []
+        for query in search_queries[:20]:
+            track_id = self.get_track_id(query)
+            track_ids.append(track_id)
+        return track_ids
+
     def get_artist_info_from_name(self, artist_name):
         artist_id = self.get_artist_id(artist_name)
         if artist_id:
@@ -163,4 +180,45 @@ class Spotify:
             return related_artists
         return None
 
+    def get_multiple_tracks_audio_features(self, tracks_id):
+        id_string = ""
+        for track_id in tracks_id:
+            id_string += track_id + ","
+        audio_features_data = self._make_request(f"https://api.spotify.com/v1/audio-features/?ids={id_string[:-1]}")
+        if audio_features_data:
+            return audio_features_data.json()
+        return None
+
+    def get_track_info(self, track_id):
+        track_info_data = self._make_request(f"https://api.spotify.com/v1/tracks/{track_id}")
+        if track_info_data:
+            track_info_json = track_info_data.json()
+            name = track_info_json["album"]["artists"][0]["name"]
+            artist_id = track_info_json["album"]["artists"][0]["id"]
+            song = track_info_json["name"]
+            image = track_info_json["album"]["images"][1]
+            return {"name": name, "artist_id": artist_id, "song": song, "image": image}
+
+    def get_multiple_tracks_info(self, tracks_id):
+        id_string = ""
+        for track_id in tracks_id:
+            id_string += track_id + ","
+        track_info_data = self._make_request(f"https://api.spotify.com/v1/tracks/?ids={id_string[:-1]}")
+        if track_info_data:
+            tracks_info = []
+            tracks = track_info_data.json()["tracks"]
+            for track in tracks:
+                name = track["album"]["artists"][0]["name"]
+                artist_id = track["album"]["artists"][0]["id"]
+                song = track["name"]
+                image = track["album"]["images"][1]
+                tracks_info.append({"name": name, "artist_id": artist_id, "song": song, "image": image})
+            return tracks_info
+        return None
+
+
+spotify = Spotify("ec89b6ab05d444c7a1f958daf52e9f79", "fffeda3a63324af4988a25982d016fed")
+h = spotify.get_multiple_track_id(["Look at her now", "Lover", "Baby", "Hello"])
+a = spotify.get_multiple_tracks_info(h)
+print(a)
 
