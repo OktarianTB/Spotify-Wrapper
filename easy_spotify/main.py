@@ -45,15 +45,22 @@ class Spotify:
         print("Unable to create artist object.")
         return None
 
-    def get_artist_id(self, search_query):
+    def get_artist_id(self, search_query, limit=1, only_id=True):
         artist_id_data = self._make_request("https://api.spotify.com/v1/search",
-                                            {"query": search_query, "type": "artist", "limit": 1})
+                                            {"query": search_query, "type": "artist", "limit": limit})
         if artist_id_data:
             artist_id_json = artist_id_data.json()
             if artist_id_json["artists"]["total"] == 0:
                 print("No artist was found.")
                 return None
-            return artist_id_json["artists"]["items"][0]["id"]
+            if only_id:
+                result = [result["id"] for result in artist_id_json["artists"]["items"]]
+            else:
+                result = [(result["id"], result["name"]) for result in artist_id_json["artists"]["items"]]
+            if limit == 1:
+                return result[0]
+            return result
+
         print("Request failed. No artist id was obtained.")
         return None
 
