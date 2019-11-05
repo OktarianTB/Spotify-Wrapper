@@ -64,15 +64,19 @@ class Spotify:
         print("Request failed. No artist id was obtained.")
         return None
 
-    def get_track_id(self, search_query):
+    def get_track_id(self, search_query, limit=1):
         track_id_data = self._make_request("https://api.spotify.com/v1/search",
-                                            {"query": search_query, "type": "track", "limit": 1})
+                                            {"query": search_query, "type": "track", "limit": limit})
         if track_id_data:
             track_id_json = track_id_data.json()
             if track_id_json["tracks"]["total"] == 0:
                 print("No track was found.")
                 return None
-            return track_id_json["tracks"]["items"][0]["id"]
+            result = [result["id"] for result in track_id_json["tracks"]["items"]]
+            if limit == 1:
+                return result[0]
+            return result
+        return None
 
     def get_multiple_track_id(self, search_queries):
         track_ids = []
