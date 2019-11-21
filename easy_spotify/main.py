@@ -6,6 +6,12 @@ from easy_spotify.artist import Artist
 
 class Spotify:
     def __init__(self, client_id, client_secret):
+        """
+        Creates an authenticated Spotify object.
+
+        :param client_id: Your client ID obtained on the Spotify Developers Website
+        :param client_secret: Your client secret obtained on the Spotify Developers Website
+        """
         self.client_id = client_id
         self.client_secret = client_secret
         self.token = self.get_access_token()
@@ -14,6 +20,10 @@ class Spotify:
         return "Spotify API Wrapper"
 
     def get_access_token(self):
+        """
+        :return: Access token required to send requests to the Spotify Web API
+        :rtype: str
+        """
         token_url = 'https://accounts.spotify.com/api/token'
         auth = HTTPBasicAuth(self.client_id, self.client_secret)
         data = {'grant_type': 'client_credentials'}
@@ -27,6 +37,13 @@ class Spotify:
         exit()
 
     def _make_request(self, url, parameters=None):
+        """
+        Send a request to the Spotify Web API to get data.
+
+        :param url: URL to send the request to
+        :param parameters: Parameters to pass in the request
+        :return: Data given by the Spotify Web API
+        """
         headers = {'Authorization': 'Bearer ' + self.token}
         data = requests.get(url, headers=headers, params=parameters)
         if data.ok:
@@ -35,6 +52,10 @@ class Spotify:
         return None
 
     def get_artist_object(self, artist_id):
+        """
+        :param artist_id: ID of an artist in Spotify's catalogue
+        :return: Artist object
+        """
         artist_info = self.get_artist_info_from_id(artist_id)
         artist_albums = self.get_albums_from_id(artist_id)
         artist_top_tracks = self.get_artist_top_tracks_from_id(artist_id, True)
@@ -46,6 +67,14 @@ class Spotify:
         return None
 
     def get_artist_id(self, search_query, limit=1, only_id=True):
+        """
+        Search for an artist's ID by name.
+
+        :param search_query: Name of artist
+        :param limit: Number of results you want to get the ID for
+        :param only_id: Get back only the id of the artist and not the name
+        :return: artist's ID(s)
+        """
         artist_id_data = self._make_request("https://api.spotify.com/v1/search",
                                             {"query": search_query, "type": "artist", "limit": limit})
         if artist_id_data:
@@ -65,6 +94,13 @@ class Spotify:
         return None
 
     def get_track_id(self, search_query, limit=1):
+        """
+        Search for a track ID by it's name.
+
+        :param search_query: Name of the track you are looking for
+        :param limit: Number of results you want to get the ID for
+        :return: the track ID
+        """
         track_id_data = self._make_request("https://api.spotify.com/v1/search",
                                             {"query": search_query, "type": "track", "limit": limit})
         if track_id_data:
@@ -79,6 +115,13 @@ class Spotify:
         return None
 
     def get_multiple_track_id(self, search_queries):
+        """
+        Look up the ID of multiple tracks with different names.
+
+        :param search_queries: Name of tracks
+        :type search_queries: list
+        :return: list of track IDs
+        """
         track_ids = []
         for query in search_queries[:20]:
             track_id = self.get_track_id(query)
@@ -86,12 +129,26 @@ class Spotify:
         return track_ids
 
     def get_artist_info_from_name(self, artist_name):
+        """
+        Get the info for an artist by name.
+
+        :param artist_name: The artist's name
+        :return: Artist information
+        :rtype: dict
+        """
         artist_id = self.get_artist_id(artist_name)
         if artist_id:
             return self.get_artist_info_from_id(artist_id)
         return None
 
     def get_artist_info_from_id(self, artist_id):
+        """
+        Get the info for an artist by ID.
+
+        :param artist_id: The artist's ID
+        :return: Artist information
+        :rtype: dict
+        """
         artist_info_data = self._make_request(f"https://api.spotify.com/v1/artists/{artist_id}")
         if artist_info_data:
             artist_info_json = artist_info_data.json()
@@ -106,6 +163,14 @@ class Spotify:
         return None
 
     def get_albums_from_id(self, artist_id, just_id_and_name=False):
+        """
+        Get an artist's albums with its ID.
+
+        :param artist_id: The artist's ID
+        :param just_id_and_name: Get just the ID and name
+        :return: List of albums
+        :rtype: list
+        """
         artist_albums_data = self._make_request(f"https://api.spotify.com/v1/artists/{artist_id}/albums")
         if artist_albums_data:
             artist_albums = []
@@ -127,12 +192,28 @@ class Spotify:
         return None
 
     def get_albums_from_name(self, artist_name, just_id_and_name=False):
+        """
+        Get an artist's albums by name.
+
+        :param artist_name: The artist's name
+        :param just_id_and_name: Get just the ID and name
+        :return: List of albums
+        :rtype: list
+        """
         artist_id = self.get_artist_id(artist_name)
         if artist_id:
             return self.get_albums_from_id(artist_id, just_id_and_name)
         return None
 
     def get_artist_top_tracks_from_id(self, artist_id, just_id_and_name=False):
+        """
+        Get an artist's top tracks by ID.
+
+        :param artist_id: The artist's ID
+        :param just_id_and_name: Get just the ID and name
+        :return: list of tracks
+        :rtype: list
+        """
         top_tracks_data = self._make_request(f"https://api.spotify.com/v1/artists/{artist_id}/top-tracks",
                                              {"market": "US"})
         if top_tracks_data:
@@ -155,12 +236,27 @@ class Spotify:
         return None
 
     def get_artist_top_tracks_from_name(self, artist_name, just_id_and_name=False):
+        """
+        Get an artist's top tracks by name.
+
+        :param artist_name: The artist's name
+        :param just_id_and_name: Get just the ID and name
+        :return: list of tracks
+        :rtype: list
+        """
         artist_id = self.get_artist_id(artist_name)
         if artist_id:
             return self.get_artist_top_tracks_from_id(artist_id, just_id_and_name)
         return None
     
     def get_tracks_of_album(self, album_id):
+        """
+        Get an album's tracks by ID.
+
+        :param album_id: The album's ID
+        :return: list of tracks
+        :rtype: list
+        """
         tracks_data = self._make_request(f"https://api.spotify.com/v1/albums/{album_id}/tracks", {"limit": 50})
         if tracks_data:
             tracks = []
@@ -175,12 +271,26 @@ class Spotify:
         return None
 
     def get_track_audio_features(self, track_id):
+        """
+        Get a track's audio features.
+
+        :param track_id: The track ID
+        :return: dictionary with audio features
+        :rtype: dict
+        """
         audio_features_data = self._make_request(f"https://api.spotify.com/v1/audio-features/{track_id}")
         if audio_features_data:
             return audio_features_data.json()
         return None
 
     def get_related_artists(self, artist_id):
+        """
+        Get related artists to an artist by ID.
+
+        :param artist_id: The artist's ID
+        :return: list of related artists
+        :rtype: list
+        """
         related_artists_data = self._make_request(f"https://api.spotify.com/v1/artists/{artist_id}/related-artists")
         if related_artists_data:
             related_artists = []
@@ -192,6 +302,13 @@ class Spotify:
         return None
 
     def get_multiple_tracks_audio_features(self, tracks_id):
+        """
+        Get the audio features of multiple tracks with different IDs.
+
+        :param tracks_id: A list of track IDs
+        :return: dictionary with audio features
+        :rtype: dict
+        """
         id_string = ""
         for track_id in tracks_id:
             id_string += track_id + ","
@@ -201,6 +318,13 @@ class Spotify:
         return None
 
     def get_track_info(self, track_id):
+        """
+        Get a track's information by ID.
+
+        :param track_id: The track ID
+        :return: dictionary with information
+        :rtype: dict
+        """
         track_info_data = self._make_request(f"https://api.spotify.com/v1/tracks/{track_id}")
         if track_info_data:
             track_info_json = track_info_data.json()
@@ -211,6 +335,13 @@ class Spotify:
             return {"name": name, "artist_id": artist_id, "song": song, "image": image}
 
     def get_multiple_tracks_info(self, tracks_id):
+        """
+        Get information for multiple tracks by IDs.
+
+        :param tracks_id: list of track IDs
+        :return: list of track information
+        :rtype: list
+        """
         id_string = ""
         for track_id in tracks_id:
             id_string += track_id + ","
